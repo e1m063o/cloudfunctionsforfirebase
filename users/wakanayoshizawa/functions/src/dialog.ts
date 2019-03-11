@@ -1,4 +1,3 @@
-import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
 
 var serviceAccount = require("/Users/wakanayoshizawa/Documents/serviceAccountKey.json");
@@ -7,18 +6,22 @@ admin.initializeApp({
   databaseURL: "https://famous-charge-231405.firebaseio.com"
 });
 
-export const onMessageCreate = functions.database
-.ref('/rooms/{roomId}/messages/{messageId}')
-.onCreate((snapshot, context) => {
-    const roomId = context.params.roomId
-    const messageId = context.params.messageId
-    console.log(`New message ${messageId} in room ${roomId}`)
+;(async () => {
+	await chat('pizzachat', 'Fear', "What heck is that?!")
+	await chat('pizzachat', 'Joy',  "Who puts brocoli on pizza?!")
+	await chat('pizzachat', 'Disgust', "That's it. I'm done.")
+	await chat('pizzachat', 'Anger',   "Congratulations, San Francisco! You've ruined pizza")
+	process.exit(0)
+})()
+.catch(err => { console.error(err) })
 
-    const massageData = snapshot.val()
-    const text = addPizzazz(massageData.text)
-    return snapshot.ref.update({ text:text })
-})
+async function chat (room: string, name: string, text: string) {
+	const messageRef = admin.database().ref('rooms').child(room).child('messages')
+	await messageRef.push({ name, text })
+	console.log(`${name}: ${text}`)
+	await sleep(2000)
+}
 
-function addPizzazz(text: string): string {
-    return text.replace(/¥bpizza¥b/g, '🍕')
+function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }
